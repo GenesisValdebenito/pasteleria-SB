@@ -4,34 +4,32 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.pasteleriasabores.pasteleria_sabores.model.Producto;
 import com.example.pasteleriasabores.pasteleria_sabores.service.ProductoService;
-import org.springframework.web.bind.annotation.PutMapping;
-
 
 @RestController
 @RequestMapping("/api/productos")
+@CrossOrigin(origins = "http://localhost:3000")  // Para permitir React
 public class ProductoController {
+
     @Autowired
     private ProductoService productoService;
 
-    // Endpoint para obtener todos los productos
+    // ------------------------------
+    // LISTAR (USER + ADMIN)
+    // ------------------------------
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<Producto>> obtenerProductos() {
         List<Producto> productos = productoService.getAllProductos();
         return ResponseEntity.ok(productos);
     }
 
-    // Endpoint para obtener un producto por ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Producto> obtenerProducto(@PathVariable("id") Long id) {
         Producto producto = productoService.getProductoById(id);
         if (producto == null) {
@@ -40,21 +38,30 @@ public class ProductoController {
         return ResponseEntity.ok(producto);
     }
 
-    // Endpoint para crear un nuevo producto
+    // ------------------------------
+    // CREAR (SOLO ADMIN)
+    // ------------------------------
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
         Producto nuevoProducto = productoService.createProducto(producto);
         return ResponseEntity.ok(nuevoProducto);
     }
 
-    // Endpoint para actualizar un producto por ID
+    // ------------------------------
+    // ACTUALIZAR (SOLO ADMIN)
+    // ------------------------------
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Producto actualizarProducto(@PathVariable Long id, @RequestBody Producto productoDetails) {
         return productoService.updateProducto(id, productoDetails);
     }
-    
-    // Endpoint para eliminar un producto por ID
+
+    // ------------------------------
+    // ELIMINAR (SOLO ADMIN)
+    // ------------------------------
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void eliminarProducto(@PathVariable Long id) {
         productoService.deleteProducto(id);
     }

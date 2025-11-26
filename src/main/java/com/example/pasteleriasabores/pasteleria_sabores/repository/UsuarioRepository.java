@@ -1,11 +1,10 @@
 package com.example.pasteleriasabores.pasteleria_sabores.repository;
 
-import java.util.Optional;
-
+import com.example.pasteleriasabores.pasteleria_sabores.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
-import com.example.pasteleriasabores.pasteleria_sabores.model.Usuario;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
