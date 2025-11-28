@@ -29,8 +29,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
@@ -46,12 +46,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
 
                 if (usuario != null) {
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    usuario.getEmail(),
-                                    null,
-                                    java.util.List.of(new SimpleGrantedAuthority("ROLE_" + rol))
-                            );
+                    // En tu JwtFilter - DEBE MANTENERSE ASÍ
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                            usuario.getEmail(),
+                            null,
+                            java.util.List.of(new SimpleGrantedAuthority("ROLE_" + rol)) // ✅ "ROLE_" + rol
+                    );
 
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);

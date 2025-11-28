@@ -1,47 +1,63 @@
 package com.example.pasteleriasabores.pasteleria_sabores.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import com.example.pasteleriasabores.pasteleria_sabores.dto.PasswordChangeRequest;
 import com.example.pasteleriasabores.pasteleria_sabores.model.Usuario;
 import com.example.pasteleriasabores.pasteleria_sabores.service.UsuarioService;
 
+
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UsuarioController {
+    
     @Autowired
     private UsuarioService usuarioService;
-
-    @GetMapping
-    public List<Usuario> getAllUsuarios() {
-        return usuarioService.getAllUsuarios();
+    
+    // Obtener perfil del usuario actual
+    @GetMapping("/perfil")
+    public ResponseEntity<?> getPerfil(@RequestHeader("Authorization") String token) {
+        // En una app real, extraerías el ID del usuario del token JWT
+        // Por ahora, simulamos que el usuario con ID 1 es el actual
+        Long userId = 1L;
+        
+        return usuarioService.findById(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-
-    @GetMapping("/{id}")
-    public Usuario getUsuarioById(Long id) {
-        return usuarioService.getUsuarioById(id);
+    
+    // Actualizar perfil
+    @PutMapping("/perfil")
+    public ResponseEntity<?> updatePerfil(@RequestHeader("Authorization") String token,
+                                         @RequestBody Usuario usuarioDetails) {
+        try {
+            Long userId = 1L; // Simulado
+            var updatedUser = usuarioService.updateProfile(userId, usuarioDetails);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-
-    @PostMapping
-    public Usuario createUsuario(Usuario usuario) {
-        return usuarioService.createUsuario(usuario);
+    
+    // Cambiar contraseña
+    @PutMapping("/cambiar-password")
+    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token,
+                                           @RequestBody PasswordChangeRequest passwordRequest) {
+        try {
+            Long userId = 1L; // Simulado
+            
+            if (!passwordRequest.getNewPassword().equals(passwordRequest.getConfirmPassword())) {
+                return ResponseEntity.badRequest().body("Las contraseñas no coinciden");
+            }
+            
+            usuarioService.changePassword(userId, passwordRequest.getCurrentPassword(), passwordRequest.getNewPassword());
+            return ResponseEntity.ok("Contraseña actualizada correctamente");
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-
-    @PutMapping("/{id}")
-    public Usuario updateUsuario(Long id, Usuario detalles) {
-        return usuarioService.updateUsuario(id, detalles);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteUsuario(Long id) {
-        usuarioService.deleteUsuario(id);
-    }
-
 }
