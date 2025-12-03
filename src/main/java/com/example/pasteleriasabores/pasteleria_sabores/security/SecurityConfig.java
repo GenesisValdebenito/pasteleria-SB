@@ -47,7 +47,7 @@ public class SecurityConfig {
                         // ⭐ RUTAS PÚBLICAS DE PRODUCTOS
                         .requestMatchers("/api/productos", "/api/productos/**").permitAll()
 
-                        // ⭐ RUTAS PÚBLICAS DE CATEGORÍAS (👈 AGREGAR ESTO)
+                        // ⭐ RUTAS PÚBLICAS DE CATEGORÍAS
                         .requestMatchers("/api/categorias", "/api/categorias/**").permitAll()
 
                         // ⭐ RUTAS PROTEGIDAS (PERFIL)
