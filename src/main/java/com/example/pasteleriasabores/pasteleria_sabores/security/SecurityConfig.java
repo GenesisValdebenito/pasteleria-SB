@@ -25,7 +25,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     @Autowired
-    private JwtFilter jwtFilter;   // Asegúrate que esta clase exista
+    private JwtFilter jwtFilter; // Asegúrate que esta clase exista
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -36,30 +36,32 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
-                // ⭐ RUTAS PÚBLICAS (LOGIN y REGISTER)
-                .requestMatchers("/auth/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // ⭐ RUTAS PÚBLICAS (LOGIN Y REGISTER)
+                        .requestMatchers("/auth/**").permitAll()
 
-                // ⭐ RUTAS PÚBLICAS DE PRODUCTOS (si quieres permitir que React vea catálogo sin login)
-                .requestMatchers("/api/productos", "/api/productos/**").permitAll()
+                        // ⭐ RUTAS PÚBLICAS DE PRODUCTOS
+                        .requestMatchers("/api/productos", "/api/productos/**").permitAll()
 
-                // ⭐ RUTAS PROTEGIDAS (PERFIL)
-                .requestMatchers("/api/usuarios/perfil/**").authenticated()
+                        // ⭐ RUTAS PÚBLICAS DE CATEGORÍAS (👈 AGREGAR ESTO)
+                        .requestMatchers("/api/categorias", "/api/categorias/**").permitAll()
 
-                // ⭐ SOLO ADMIN
-                .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/pedidos/**").hasAuthority("ADMIN")
+                        // ⭐ RUTAS PROTEGIDAS (PERFIL)
+                        .requestMatchers("/api/usuarios/perfil/**").authenticated()
 
-                // ⭐ Swagger permitido
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // ⭐ SOLO ADMIN
+                        .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/pedidos/**").hasAuthority("ADMIN")
 
-                // ⭐ Todo lo demás requiere autenticación
-                .anyRequest().authenticated()
-            );
+                        // ⭐ Swagger permitido
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                        // ⭐ Todo lo demás requiere autenticación
+                        .anyRequest().authenticated());
 
         // ⭐ ACTIVAR JWT
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
