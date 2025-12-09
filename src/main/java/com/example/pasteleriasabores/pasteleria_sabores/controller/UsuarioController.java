@@ -2,9 +2,11 @@ package com.example.pasteleriasabores.pasteleria_sabores.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.pasteleriasabores.pasteleria_sabores.dto.PasswordChangeRequest;
+import com.example.pasteleriasabores.pasteleria_sabores.dto.UsuarioResponse;
 import com.example.pasteleriasabores.pasteleria_sabores.model.Usuario;
 import com.example.pasteleriasabores.pasteleria_sabores.service.UsuarioService;
 
@@ -19,28 +21,28 @@ public class UsuarioController {
     
     // Obtener perfil del usuario actual
     @GetMapping("/perfil")
-    public ResponseEntity<?> getPerfil(@RequestHeader("Authorization") String token) {
-        // En una app real, extraerías el ID del usuario del token JWT
-        // Por ahora, simulamos que el usuario con ID 1 es el actual
-        Long userId = 1L;
-        
-        return usuarioService.findById(userId)
+    public ResponseEntity<?> getPerfil() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return usuarioService.findByEmail(email)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
     
     // Actualizar perfil
-    @PutMapping("/perfil")
-    public ResponseEntity<?> updatePerfil(@RequestHeader("Authorization") String token,
-                                         @RequestBody Usuario usuarioDetails) {
+   @PutMapping("/perfil")
+    public ResponseEntity<?> updatePerfil(@RequestBody Usuario datos) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
         try {
-            Long userId = 1L; // Simulado
-            var updatedUser = usuarioService.updateProfile(userId, usuarioDetails);
-            return ResponseEntity.ok(updatedUser);
-        } catch (RuntimeException e) {
+            UsuarioResponse updated = usuarioService.updateProfileByEmail(email, datos);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     
     // Cambiar contraseña
     @PutMapping("/cambiar-password")

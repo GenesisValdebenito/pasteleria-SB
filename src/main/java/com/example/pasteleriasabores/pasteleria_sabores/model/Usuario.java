@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Entity
 @Table(name = "usuarios")
 @Data
@@ -23,7 +25,7 @@ public class Usuario {
     
     @Column(nullable = false, unique = true, length = 100)
     private String email;
-    
+
     @Column(nullable = false, length = 255)
     private String password;
     
@@ -34,34 +36,18 @@ public class Usuario {
     private String direccion;
     
     @Column(name = "fecha_nacimiento")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private String fechaNacimiento;
+
+    @Column(nullable = false, length = 20)
+    private String rol = "USER"; // ADMIN, USER, TEST
     
     @Column(nullable = false, length = 20)
-    private String rol; // cliente, admin, moderador
-    
-    @Column(nullable = false, length = 20)
-    private String estado = "activo"; // activo, inactivo, bloqueado
-    
+    private String estado = "activo";
+
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
-    
+
     @Column(name = "ultimo_acceso")
     private LocalDateTime ultimoAcceso;
-
-    @Column(name = "rol")
-    
-    public void setEmail(String email) {
-        this.email = email;
-        // Asignar rol automáticamente basado en email
-        if (email != null) {
-            String emailLower = email.toLowerCase();
-            if (emailLower.endsWith("@admin.com")) {
-                this.rol = "ADMIN";
-            } else if (emailLower.endsWith("@test.com")) {
-                this.rol = "TEST"; 
-            } else {
-                this.rol = "USER";
-            }
-        }
-    }
 }

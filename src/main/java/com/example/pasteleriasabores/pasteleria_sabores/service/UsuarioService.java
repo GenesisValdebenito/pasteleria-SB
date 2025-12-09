@@ -186,6 +186,22 @@ public class UsuarioService {
         return toUsuarioResponse(updatedUser);
     }
 
+    // Actualizar perfil por email
+    public UsuarioResponse updateProfileByEmail(String email, Usuario datos) {
+    Usuario usuario = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    usuario.setNombre(datos.getNombre());
+    usuario.setTelefono(datos.getTelefono());
+    usuario.setDireccion(datos.getDireccion());
+    usuario.setFechaNacimiento(datos.getFechaNacimiento());
+
+    Usuario actualizado = usuarioRepository.save(usuario);
+
+    return toUsuarioResponse(actualizado);
+}
+
+
     // Eliminar usuario
     public void deleteById(Long id) {
         if (!usuarioRepository.existsById(id)) {

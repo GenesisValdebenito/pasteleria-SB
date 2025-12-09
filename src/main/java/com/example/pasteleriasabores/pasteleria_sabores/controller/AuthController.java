@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -57,46 +58,52 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-        try {
-            // Validar que las contraseñas coincidan
-            if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-                return ResponseEntity.badRequest().body("Las contraseñas no coinciden");
-            }
-
-            // Validar longitud de contraseña
-            if (registerRequest.getPassword().length() < 6) {
-                return ResponseEntity.badRequest().body("La contraseña debe tener al menos 6 caracteres");
-            }
-
-            // Crear nuevo usuario
-            Usuario nuevoUsuario = new Usuario();
-            nuevoUsuario.setNombre(registerRequest.getNombre());
-            nuevoUsuario.setEmail(registerRequest.getEmail());
-            
-            // ✅ HASH DE CONTRASEÑA
-            nuevoUsuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-            
-            nuevoUsuario.setTelefono(registerRequest.getTelefono());
-            nuevoUsuario.setDireccion(registerRequest.getDireccion());
-            nuevoUsuario.setFechaNacimiento(registerRequest.getFechaNacimiento());
-
-            UsuarioResponse userResponse = usuarioService.register(nuevoUsuario);
-
-            // ✅ GENERAR JWT REAL
-            String token = jwtUtil.generarToken(userResponse.getEmail(), userResponse.getRol());
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("user", userResponse);
-            response.put("token", token); // ✅ TOKEN JWT REAL
-
-            return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error durante el registro: " + e.getMessage());
+   @PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    try {
+        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Las contraseñas no coinciden");
         }
+
+        if (registerRequest.getPassword().length() < 6) {
+            return ResponseEntity.badRequest().body("La contraseña debe tener al menos 6 caracteres");
+        }
+
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setNombre(registerRequest.getNombre());
+        nuevoUsuario.setEmail(registerRequest.getEmail());
+        nuevoUsuario.setTelefono(registerRequest.getTelefono());
+        nuevoUsuario.setDireccion(registerRequest.getDireccion());
+        nuevoUsuario.setFechaNacimiento(registerRequest.getFechaNacimiento());
+        nuevoUsuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        nuevoUsuario.setEstado("activo");
+        nuevoUsuario.setFechaRegistro(LocalDateTime.now());
+
+        // ⭐ ASIGNAR ROL AUTOMÁTICO SEGÚN EMAIL
+        String email = registerRequest.getEmail().toLowerCase();
+        if (email.endsWith("@admin.com")) {
+            nuevoUsuario.setRol("ADMIN");
+        } 
+        else if (email.endsWith("@test.com")) {
+            nuevoUsuario.setRol("TEST");
+        }
+        else {
+            nuevoUsuario.setRol("USER");
+        }
+
+        UsuarioResponse userResponse = usuarioService.register(nuevoUsuario);
+
+        String token = jwtUtil.generarToken(userResponse.getEmail(), userResponse.getRol());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", userResponse);
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
+}
+
 }

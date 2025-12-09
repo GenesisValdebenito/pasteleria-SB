@@ -31,6 +31,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,26 +43,26 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // ⭐ RUTAS PÚBLICAS (LOGIN Y REGISTER)
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
 
                         // ⭐ RUTAS PÚBLICAS DE PRODUCTOS
-                        .requestMatchers("/api/productos", "/api/productos/**").permitAll()
+                        .requestMatchers("/api/productos/**").permitAll()
 
                         // ⭐ RUTAS PÚBLICAS DE CATEGORÍAS
-                        .requestMatchers("/api/categorias", "/api/categorias/**").permitAll()
+                        .requestMatchers("/api/categorias/**").permitAll()
 
-                        // ⭐ RUTAS PROTEGIDAS (PERFIL)
+                        // ⭐ RUTAS PROTEGIDAS
                         .requestMatchers("/api/usuarios/perfil/**").authenticated()
+                        .requestMatchers("/api/pedidos/perfil/**").authenticated()
 
                         // ⭐ SOLO ADMIN
                         .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/pedidos/**").hasAuthority("ADMIN")
 
-                        // ⭐ Swagger permitido
+                        // Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // ⭐ Todo lo demás requiere autenticaciónn
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated()
+                );
 
         // ⭐ ACTIVAR JWT
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

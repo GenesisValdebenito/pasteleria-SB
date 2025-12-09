@@ -3,8 +3,10 @@ package com.example.pasteleriasabores.pasteleria_sabores.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -12,64 +14,58 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "tu_clave_secreta_super_segura";
+    private static final String SECRET_KEY =
+            "A9x!P3kz#Qw82@LmN7eT44vZbP0rHxC2KfD1sGmU8pR9yJqW0tV5bA3cN6fZ8";
 
-    // =======================
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    }
+
     // GENERAR TOKEN
-    // =======================
     public String generarToken(String email, String rol) {
-
         return Jwts.builder()
                 .setSubject(email)
-                .claim("authorities", List.of(rol))   // <<⭐ AQUÍ guardamos tu rol
+                .claim("authorities", List.of(rol))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // =======================
-    // OBTENER EMAIL
-    // =======================
+    // EXTRAER EMAIL
     public String extraerEmail(String token) {
         return extraerClaim(token, Claims::getSubject);
     }
 
-    // =======================
-    // OBTENER ROL (authority)
-    // =======================
+    // EXTRAER ROL
     public String extraerRol(String token) {
         Claims claims = extraerTodosLosClaims(token);
         List<String> roles = claims.get("authorities", List.class);
 
-        if (roles != null && !roles.isEmpty()) {
-            return roles.get(0);  // ADMIN o CLIENTE o TEST
-        }
-
-        return null;
+        return (roles != null && !roles.isEmpty()) ? roles.get(0) : null;
     }
 
-    // =======================
-    // VALIDACIÓN TOKEN
-    // =======================
+    // VALIDAR TOKEN
     public Boolean validarToken(String token, String emailUsuario) {
         final String email = extraerEmail(token);
         return (email.equals(emailUsuario) && !estaExpirado(token));
     }
 
-    // =======================
-    // MÉTODOS INTERNOS
-    // =======================
-    private Claims extraerTodosLosClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+    private boolean estaExpirado(String token) {
+        Date expiration = extraerClaim(token, Claims::getExpiration);
+        return expiration.before(new Date());
     }
 
     private <T> T extraerClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extraerTodosLosClaims(token);
+        Claims claims = extraerTodosLosClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    private Boolean estaExpirado(String token) {
-        return extraerClaim(token, Claims::getExpiration).before(new Date());
+    private Claims extraerTodosLosClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
