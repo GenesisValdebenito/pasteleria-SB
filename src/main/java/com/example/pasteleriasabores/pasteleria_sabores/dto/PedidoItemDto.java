@@ -5,7 +5,10 @@ import lombok.Data;
 @Data
 public class PedidoItemDto {
     private Long productoId;
-    private int cantidad;
-    private int precioUnitario;
+    private String nombreProducto;
+    private Integer cantidad;
+    private Integer precioUnitario;
+    private Integer totalItem;
+    private String imagen;
 }
 
