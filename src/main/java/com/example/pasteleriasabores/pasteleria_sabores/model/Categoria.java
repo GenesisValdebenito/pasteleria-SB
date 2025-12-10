@@ -14,8 +14,14 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 255)
     private String descripcion;
+
+    @PrePersist
+    public void onCreate() {
+        if (descripcion == null) descripcion = "";
+    }
 }
