@@ -56,9 +56,9 @@ public class PedidoService {
 
         pedido.setItems(items);
         pedido.setSubtotal(subtotal.get());
-        pedido.setEnvio(req.getEnvio());
-        pedido.setDescuento(req.getDescuento());
-        pedido.setTotal(subtotal.get() + req.getEnvio() - req.getDescuento());
+        //pedido.setEnvio(req.getEnvio());
+        //pedido.setDescuento(req.getDescuento());
+        //pedido.setTotal(subtotal.get() + req.getEnvio() - req.getDescuento());
 
         return pedidoRepository.save(pedido);
     }
